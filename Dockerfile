@@ -37,8 +37,8 @@ USER root
 
 # Copy and extract webOS CLI
 ARG WEBOS_SDK_PATH=/webOS_TV_SDK
-COPY vendor/webos_cli_tv.zip .
-RUN unzip webos_cli_tv.zip -d ${WEBOS_SDK_PATH}  && chmod -R +x ${WEBOS_SDK_PATH}/CLI/bin
+COPY vendor/webos_cli_tv.zip /
+RUN unzip -q /webos_cli_tv.zip -d ${WEBOS_SDK_PATH}  && chmod -R +x ${WEBOS_SDK_PATH}/CLI/bin
 
 # Add webos cli to PATH
 ENV PATH $PATH:${WEBOS_SDK_PATH}/CLI/bin
