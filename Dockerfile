@@ -30,39 +30,15 @@ ENV HOME /home/${USER}
 USER ${USER}
 WORKDIR ${HOME}
 
-# Install tizen studio
-# See: https://developer.tizen.org/development/tizen-studio/download/installing-tizen-studio#cli_installer
-# Tizen Studio can't be installed under root, so we use developer.
-# Tizen Studio must be installed in user home dir.
-# See: https://stackoverflow.com/questions/47269478/error-installing-tizen-studio-on-windows-10
-# See also: https://forum.developer.samsung.com/t/double-click-on-installer-tizen-studio-4-1-doesnt-launch-the-app-on-big-sure-11-3-1/13352/8
-ARG TIZEN_STUDIO_VERSION=4.1.1
-ARG TIZEN_STUDIO_FILE=web-cli_Tizen_Studio_${TIZEN_STUDIO_VERSION}_ubuntu-64.bin
-ARG TIZEN_STUDIO_URL=http://download.tizen.org/sdk/Installer/tizen-studio_${TIZEN_STUDIO_VERSION}/${TIZEN_STUDIO_FILE}
-RUN wget ${TIZEN_STUDIO_URL} \
-  && chmod +x ${TIZEN_STUDIO_FILE} \
-  && echo y | ./${TIZEN_STUDIO_FILE} --accept-license \
-  && rm ${TIZEN_STUDIO_FILE}
-
-# Copy sample author certificate and profiles.xml
-COPY --chown=${USER} tizen-profile/author.p12 author.p12
-COPY --chown=${USER} tizen-profile/profiles.xml ${HOME}/tizen-studio-data/profile/profiles.xml
-
 # Container is intentionally started under the root user.
 # Starting under non-root user will cause permissions issue when attaching volumes
 # See: https://github.com/moby/moby/issues/2259
 USER root
 
-# Move Tizen studio from home because we mount home to host volume, and create symlink to keep everything working.
-RUN mv ${HOME}/tizen-studio /tizen-studio \
-  && ln -s /tizen-studio ${HOME}/tizen-studio
-
 # Copy and extract webOS CLI
 ARG WEBOS_SDK_PATH=/webOS_TV_SDK
 COPY vendor/webos_cli_tv.zip .
-RUN unzip -q webos_cli_tv.zip -d ${WEBOS_SDK_PATH} \
-  && chmod -R +x ${WEBOS_SDK_PATH}/CLI/bin \
-  && rm webos_cli_tv.zip
+RUN unzip webos_cli_tv.zip -d ${WEBOS_SDK_PATH}  && chmod -R +x ${WEBOS_SDK_PATH}/CLI/bin
 
-# Add tizen/webos cli to PATH
-ENV PATH $PATH:/tizen-studio/tools/:/tizen-studio/tools/ide/bin/:/tizen-studio/package-manager/:${WEBOS_SDK_PATH}/CLI/bin
+# Add webos cli to PATH
+ENV PATH $PATH:${WEBOS_SDK_PATH}/CLI/bin
